@@ -25,7 +25,6 @@ export default function Home() {
       <Navbar />
 
       <main className="bg-black text-light min-vh-100">
-        {/* HERO / CARRUSEL */}
         <section className="container-fluid p-0">
           <div id="heroCarousel" className="carousel slide" data-bs-ride="carousel">
             <div className="carousel-inner">
@@ -93,11 +92,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FRASE PRINCIPAL */}
         <section
           className="py-5 d-flex justify-content-center text-center"
           style={{
-            background: "white",
+            background: "#510202ff",
             color: "black",
             width: "100%",
             borderTop: "1px solid #444",
@@ -114,7 +112,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* MAPA + INFO */}
         <section className="py-5 border-secondary mt-5 mb-5">
           <div className="container">
             <div className="row align-items-start">
