@@ -1,6 +1,6 @@
 import Navbar from "./components/navbar";
 import Image from "next/image";
-import { useState } from "react";
+import React, { useState } from "react"; 
 
 export default function Eventos() {
   const eventos = [
@@ -101,7 +101,9 @@ export default function Eventos() {
                 </div>
                 <div className="p-3">
                   <h5 className="fw-bold mb-1">{ev.titulo}</h5>
-                  <p className="text-light-emphasis mb-0">{ev.descripcion}</p>
+                  <p className="text-light-emphasis mb-0">
+                    {ev.descripcion}
+                  </p>
                 </div>
               </div>
             </div>
@@ -111,8 +113,8 @@ export default function Eventos() {
         <div className="card-dark p-4 rounded-4 mb-4">
           <p className="text-light-emphasis mb-0">
             Realizamos eventos personalizados: cumpleaños, cenas, reuniones,
-            corporativos y celebraciones especiales.
-            Puedes consultar disponibilidad, menú especial, precios y más.
+            corporativos y celebraciones especiales. Puedes consultar
+            disponibilidad, menú especial, precios y más.
           </p>
         </div>
 
@@ -182,12 +184,18 @@ export default function Eventos() {
             ></textarea>
           </div>
 
-          <button className="btn btn-primary-red px-4" type="submit" disabled={enviando}>
+          <button
+            className="btn btn-primary-red px-4"
+            type="submit"
+            disabled={enviando}
+          >
             {enviando ? "Enviando..." : "Enviar solicitud"}
           </button>
 
           {mensajeOk && <p className="text-success mt-3">{mensajeOk}</p>}
-          {mensajeError && <p className="text-danger mt-3">{mensajeError}</p>}
+          {mensajeError && (
+            <p className="text-danger mt-3">{mensajeError}</p>
+          )}
         </form>
       </main>
     </>
