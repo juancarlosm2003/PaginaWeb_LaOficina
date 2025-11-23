@@ -125,3 +125,36 @@ body {
 .text-light-emphasis {
   color: rgba(255, 255, 255, 0.78);
 }
+
+.btn-menu.inactive-btn {
+          background-color: #700e0e !important;
+          color: white !important;
+          border: 1px solid #700e0e !important;
+          transition: background-color 0.3s;
+        }
+        .btn-menu.inactive-btn:hover {
+          background-color: #9e1515 !important;
+        }
+
+        .btn-menu.active-btn {
+          background-color: white !important;
+          color: #700e0e !important;
+          border: 1px solid #700e0e !important;
+        }
+
+        .menu-card {
+          transition: transform 0.3s, box-shadow 0.3s;
+          cursor: pointer;
+        }
+        .menu-card:hover {
+          transform: translateY(-5px) scale(1.03);
+          box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.3);
+        }
+
+        .precio {
+          font-size: 1rem;
+          font-weight: 600;
+          color: white;
+          margin-top: 0.5rem;
+        }
+
