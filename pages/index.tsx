@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Cedarville_Cursive, Libre_Caslon_Text } from "next/font/google";
@@ -8,13 +8,72 @@ import { Cedarville_Cursive, Libre_Caslon_Text } from "next/font/google";
 const cedarville = Cedarville_Cursive({ weight: "400" });
 const libreCaslon = Libre_Caslon_Text({ weight: ["400", "700"] });
 
+// Tipo para una reseña
+type Reseña = {
+  nombre: string;
+  comentario: string;
+  rating: number;
+  fecha: string;
+};
+
 export default function Home() {
+  const [reseñas, setReseñas] = useState<Reseña[]>([]);
+  const [nombre, setNombre] = useState("");
+  const [comentario, setComentario] = useState("");
+  const [rating, setRating] = useState(5);
+
+  // Cargar reseñas guardadas en localStorage al inicio
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const guardadas = localStorage.getItem("reseñas-la-oficina");
+      if (guardadas) {
+        try {
+          setReseñas(JSON.parse(guardadas));
+        } catch (e) {
+          console.error("Error al leer reseñas guardadas", e);
+        }
+      }
+    }
+  }, []);
+
+  // Guardar reseñas cada vez que cambien
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("reseñas-la-oficina", JSON.stringify(reseñas));
+    }
+  }, [reseñas]);
+
+  // Inicializar Bootstrap JS
   useEffect(() => {
     if (typeof window !== "undefined") {
       // @ts-ignore
       import("bootstrap/dist/js/bootstrap.bundle.min.js");
     }
   }, []);
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    if (!nombre.trim() || !comentario.trim()) {
+      alert("Por favor llena tu nombre y tu reseña 😊");
+      return;
+    }
+
+    const nueva: Reseña = {
+      nombre: nombre.trim(),
+      comentario: comentario.trim(),
+      rating,
+      fecha: new Date().toLocaleDateString(),
+    };
+
+    // Agregamos la nueva reseña al inicio
+    setReseñas((prev) => [nueva, ...prev]);
+
+    // Limpiar formulario
+    setNombre("");
+    setComentario("");
+    setRating(5);
+  };
 
   return (
     <>
@@ -225,17 +284,97 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Reseñas */}
+        {/* Reseñas (dinámicas) */}
         <section className="py-5 border-top border-secondary">
           <div className="container">
-            <h2 className="h3 mb-4">Reseñas recientes</h2>
-            <div className="card-dark p-3 mb-3">"Reseña #1"<div className="small text-muted mt-2">– Cliente 1</div></div>
-            <div className="card-dark p-3">"Reseña #2"<div className="small text-muted mt-2">– Cliente 2</div></div>
+            <h2 className="h3 mb-4">Reseñas de nuestros clientes</h2>
+
+            <div className="row g-4">
+              {/* Formulario */}
+              <div className="col-md-5">
+                <div className="card-dark p-4 rounded-4">
+                  <h5 className="mb-3">Deja tu reseña</h5>
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label">Nombre</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        placeholder="Tu nombre"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Calificación</label>
+                      <select
+                        className="form-select"
+                        value={rating}
+                        onChange={(e) => setRating(Number(e.target.value))}
+                      >
+                        <option value={5}>★★★★★</option>
+                        <option value={4}>★★★★☆</option>
+                        <option value={3}>★★★☆☆</option>
+                        <option value={2}>★★☆☆☆</option>
+                        <option value={1}>★☆☆☆☆</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Comentario</label>
+                      <textarea
+                        className="form-control"
+                        rows={4}
+                        value={comentario}
+                        onChange={(e) => setComentario(e.target.value)}
+                        placeholder="¿Cómo estuvo tu experiencia en La Oficina?"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="btn"
+                      style={{ backgroundColor: "#5b0000", color: "white" }}
+                    >
+                      Enviar reseña
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Lista de reseñas */}
+              <div className="col-md-7">
+                {reseñas.length === 0 ? (
+                  <p className="text-light-emphasis">
+                    Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia! 😄
+                  </p>
+                ) : (
+                  <div className="d-flex flex-column gap-3">
+                    {reseñas.map((r, i) => (
+                      <div key={i} className="card-dark p-3 rounded-4">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <strong>{r.nombre}</strong>
+                          <span className="small text-muted">{r.fecha}</span>
+                        </div>
+                        <div className="mb-2">
+                          {"★".repeat(r.rating) + "☆".repeat(5 - r.rating)}
+                        </div>
+                        <p className="mb-0">{r.comentario}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="py-5 border-top border-secondary text-center text-md-start" style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}>
+        <footer
+          className="py-5 border-top border-secondary text-center text-md-start"
+          style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}
+        >
           <div className="container">
             <div className="row align-items-center">
               <div className="col-md-6 mb-4 mb-md-0">
@@ -244,11 +383,19 @@ export default function Home() {
                 <p className="mb-1">+504 9500-1933</p>
               </div>
               <div className="col-md-6 d-flex flex-column align-items-center align-items-md-end gap-3">
-                <a href="https://www.instagram.com/laoficina.hn" target="_blank" className="d-flex align-items-center gap-2 text-white text-decoration-none">
+                <a
+                  href="https://www.instagram.com/laoficina.hn"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
                   <img src="instaicon.webp" alt="Instagram" style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
                   @laoficina
                 </a>
-                <a href="https://www.facebook.com/laoficinahn" target="_blank" className="d-flex align-items-center gap-2 text-white text-decoration-none">
+                <a
+                  href="https://www.facebook.com/laoficinahn"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
                   <img src="faceicon.webp" alt="Facebook" style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
                   La Oficina
                 </a>
