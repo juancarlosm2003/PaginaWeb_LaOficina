@@ -125,6 +125,27 @@ body {
 .text-light-emphasis {
   color: rgba(255, 255, 255, 0.78);
 }
+.rating-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 1.2rem;
+  color: #555;
+  transition: transform 0.2s ease, text-shadow 0.2s ease, color 0.2s ease;
+}
+
+.star.filled {
+  color: #ffc107; /* Amarillo tipo Bootstrap warning */
+}
+
+/* Efecto cuando pasás el mouse por encima de la tarjeta de reseña */
+.reseña-card:hover .star.filled {
+  transform: translateY(-1px) scale(1.05);
+  text-shadow: 0 0 6px rgba(255, 193, 7, 0.7);
+}
+
 
 .btn-menu.inactive-btn {
           background-color: #700e0e !important;
