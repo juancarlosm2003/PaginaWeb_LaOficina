@@ -1,16 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./components/navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Cedarville_Cursive, Libre_Caslon_Text } from "next/font/google";
+import { db } from "../lib/firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
 
 const cedarville = Cedarville_Cursive({ weight: "400" });
 const libreCaslon = Libre_Caslon_Text({ weight: ["400", "700"] });
+
 const whatsappUrl =
-    "https://wa.me/50498990034?text=Hola,%20me%20gustaría%20cotizar%20un%20evento%20en%20La%20Oficina.";
+  "https://wa.me/50498990034?text=Hola,%20me%20gustaría%20cotizar%20un%20evento%20en%20La%20Oficina.";
 
 type Reseña = {
+  id?: string;
   nombre: string;
   comentario: string;
   rating: number;
@@ -22,27 +33,48 @@ export default function Home() {
   const [nombre, setNombre] = useState("");
   const [comentario, setComentario] = useState("");
   const [rating, setRating] = useState(5);
+  const [cargando, setCargando] = useState(true);
 
-  // Cargar reseñas
-useEffect(() => {
-  const guardadas = localStorage.getItem("reseñas-la-oficina");
-  if (guardadas) {
-    try {
-      setReseñas(JSON.parse(guardadas));
-    } catch (e) {
-      console.error("Error al leer reseñas guardadas", e);
-    }
-  }
-}, []);
+  // Cargar reseñas desde Firestore al inicio
+  useEffect(() => {
+    const cargarReseñas = async () => {
+      try {
+        const q = query(
+          collection(db, "reseñas"),
+          orderBy("fecha", "desc")
+        );
+        const snapshot = await getDocs(q);
 
+        const data: Reseña[] = snapshot.docs.map((doc) => {
+          const d = doc.data() as any;
+          let textoFecha = "";
+          if (d.fecha instanceof Timestamp) {
+            textoFecha = d.fecha.toDate().toLocaleDateString();
+          } else if (typeof d.fecha === "string") {
+            textoFecha = d.fecha;
+          }
 
-// Guardar reseñas 
-useEffect(() => {
-  if (reseñas.length > 0) {
-    localStorage.setItem("reseñas-la-oficina", JSON.stringify(reseñas));
-  }
-}, [reseñas]);
+          return {
+            id: doc.id,
+            nombre: d.nombre ?? "Anónimo",
+            comentario: d.comentario ?? "",
+            rating: Number(d.rating ?? 5),
+            fecha: textoFecha,
+          };
+        });
 
+        setReseñas(data);
+      } catch (err) {
+        console.error("Error al cargar reseñas desde Firestore:", err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarReseñas();
+  }, []);
+
+  // Inicializar Bootstrap JS
   useEffect(() => {
     if (typeof window !== "undefined") {
       // @ts-ignore
@@ -50,15 +82,12 @@ useEffect(() => {
     }
   }, []);
 
-  // Función para renderizar estrellas con clases (para animación)
+  // Renderizar estrellas con clases (para animación en CSS)
   const renderStars = (value: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <span
-          key={i}
-          className={`star ${i <= value ? "filled" : ""}`}
-        >
+        <span key={i} className={`star ${i <= value ? "filled" : ""}`}>
           ★
         </span>
       );
@@ -66,7 +95,7 @@ useEffect(() => {
     return stars;
   };
 
-  // Promedio
+  // Promedio de calificación
   const promedio =
     reseñas.length > 0
       ? reseñas.reduce((acc, r) => acc + r.rating, 0) / reseñas.length
@@ -74,7 +103,7 @@ useEffect(() => {
 
   const promedioRedondeado = Math.round(promedio * 10) / 10;
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!nombre.trim() || !comentario.trim()) {
@@ -82,20 +111,34 @@ useEffect(() => {
       return;
     }
 
-    const nueva: Reseña = {
-      nombre: nombre.trim(),
-      comentario: comentario.trim(),
-      rating,
-      fecha: new Date().toLocaleDateString(),
-    };
+    try {
+      // Guardar en Firestore
+      const docRef = await addDoc(collection(db, "reseñas"), {
+        nombre: nombre.trim(),
+        comentario: comentario.trim(),
+        rating,
+        fecha: Timestamp.now(),
+      });
 
-    // Agregamos la nueva reseña al inicio
-    setReseñas((prev) => [nueva, ...prev]);
+      const nueva: Reseña = {
+        id: docRef.id,
+        nombre: nombre.trim(),
+        comentario: comentario.trim(),
+        rating,
+        fecha: new Date().toLocaleDateString(),
+      };
 
-    // Limpiar formulario
-    setNombre("");
-    setComentario("");
-    setRating(5);
+      // Agregar al estado (se verá inmediatamente)
+      setReseñas((prev) => [nueva, ...prev]);
+
+      // Limpiar formulario
+      setNombre("");
+      setComentario("");
+      setRating(5);
+    } catch (err) {
+      console.error("Error al guardar reseña en Firestore:", err);
+      alert("Ocurrió un error al guardar tu reseña. Inténtalo de nuevo.");
+    }
   };
 
   return (
@@ -103,8 +146,13 @@ useEffect(() => {
       <Navbar />
 
       <main className="bg-black text-light min-vh-100">
+        {/* Carousel */}
         <section className="container-fluid p-0">
-          <div id="heroCarousel" className="carousel slide" data-bs-ride="carousel">
+          <div
+            id="heroCarousel"
+            className="carousel slide"
+            data-bs-ride="carousel"
+          >
             <div className="carousel-inner">
               <div className="carousel-item active" data-bs-interval="3000">
                 <img
@@ -119,7 +167,11 @@ useEffect(() => {
                 <img
                   src="/Imgcomida.jpg"
                   className="d-block w-100"
-                  style={{ height: "70vh", objectFit: "cover", objectPosition: "70% 65%" }}
+                  style={{
+                    height: "70vh",
+                    objectFit: "cover",
+                    objectPosition: "70% 65%",
+                  }}
                   alt="slide2"
                 />
                 <div className="carousel-caption d-none d-md-block">
@@ -132,7 +184,11 @@ useEffect(() => {
                 <img
                   src="/Imglocal.jpg"
                   className="d-block w-100"
-                  style={{ height: "70vh", objectFit: "cover", objectPosition: "60% 75%" }}
+                  style={{
+                    height: "70vh",
+                    objectFit: "cover",
+                    objectPosition: "60% 75%",
+                  }}
                   alt="slide3"
                 />
                 <div className="carousel-caption d-none d-md-block">
@@ -162,6 +218,7 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* Sección principal */}
         <section
           className="py-5 d-flex justify-content-center text-center"
           style={{
@@ -181,7 +238,7 @@ useEffect(() => {
           </div>
         </section>
 
-        {/*mapa*/}
+        {/* Mapa e info */}
         <section
           className="border-secondary mt-5 mb-5"
           style={{ paddingTop: "120px", paddingBottom: "120px" }}
@@ -189,7 +246,10 @@ useEffect(() => {
           <div className="container">
             <div className="row align-items-start">
               <div className="col-lg-6 mb-4 mb-lg-0">
-                <div className="rounded overflow-hidden shadow" style={{ width: "100%", height: "550px" }}>
+                <div
+                  className="rounded overflow-hidden shadow"
+                  style={{ width: "100%", height: "550px" }}
+                >
                   <iframe
                     width="100%"
                     height="100%"
@@ -204,9 +264,18 @@ useEffect(() => {
                 <div className="row g-3">
                   {[
                     { title: "Horarios", text: "Lunes a domingo \n12:00 pm – 11:00 pm" },
-                    { title: "Ubicación", text: "Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras" },
-                    { title: "Servicio Buffet", text: "Escríbenos para saber más de nuestro buffet diario." },
-                    { title: "Karaoke Experience", text: "Disfruta de nuestras noches de karaoke con un ambiente divertido y relajado." },
+                    {
+                      title: "Ubicación",
+                      text: "Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras",
+                    },
+                    {
+                      title: "Servicio Buffet",
+                      text: "Escríbenos para saber más de nuestro buffet diario.",
+                    },
+                    {
+                      title: "Karaoke Experience",
+                      text: "Disfruta de nuestras noches de karaoke con un ambiente divertido y relajado.",
+                    },
                   ].map((item, i) => (
                     <div className="col-sm-6" key={i}>
                       <div
@@ -225,7 +294,10 @@ useEffect(() => {
                   ))}
                 </div>
 
-                <div className="mt-3 rounded overflow-hidden shadow" style={{ flexGrow: 1 }}>
+                <div
+                  className="mt-3 rounded overflow-hidden shadow"
+                  style={{ flexGrow: 1 }}
+                >
                   <img
                     src="alitas.jpg"
                     alt="Información adicional"
@@ -237,13 +309,26 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* Tarjetas de comida */}
         <section className="py-5 mt-2 border-top border-secondary">
           <div className="container-fluid px-5">
             <div className="row g-5 justify-content-center">
               {[
-                { img: "bebidasnaturales.jpg", title: "Jugos 100% naturales", text: "Acompaña tu almuerzo con nuestros jugos refrescantes, el complemento perfecto para tus comidas." },
-                { img: "sopa.jpg", title: "Sopas caseras y deliciosas", text: "Sopas frescas y preparadas con ingredientes naturales que reconfortan el alma." },
-                { img: "postres.jpg", title: "Postres irresistibles", text: "Endulza tu comida con nuestros postres llenos de sabor. El cierre perfecto para tu almuerzo o cena." },
+                {
+                  img: "bebidasnaturales.jpg",
+                  title: "Jugos 100% naturales",
+                  text: "Acompaña tu almuerzo con nuestros jugos refrescantes, el complemento perfecto para tus comidas.",
+                },
+                {
+                  img: "sopa.jpg",
+                  title: "Sopas caseras y deliciosas",
+                  text: "Sopas frescas y preparadas con ingredientes naturales que reconfortan el alma.",
+                },
+                {
+                  img: "postres.jpg",
+                  title: "Postres irresistibles",
+                  text: "Endulza tu comida con nuestros postres llenos de sabor. El cierre perfecto para tu almuerzo o cena.",
+                },
               ].map((item, i) => (
                 <div className="col-md-4" key={i}>
                   <div
@@ -252,19 +337,25 @@ useEffect(() => {
                       backgroundColor: "#510910ff",
                       borderRadius: "12px",
                       overflow: "hidden",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
+                      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.4)",
                       transition: "transform 0.3s ease, box-shadow 0.3s ease",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-8px)";
-                      e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.55)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 25px rgba(0, 0, 0, 0.55)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.4)";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 15px rgba(0, 0, 0, 0.4)";
                     }}
                   >
-                    <img src={item.img} className="card-img-top" style={{ height: "380px", objectFit: "cover" }} />
+                    <img
+                      src={item.img}
+                      className="card-img-top"
+                      style={{ height: "380px", objectFit: "cover" }}
+                    />
                     <div className="p-4 d-flex flex-column flex-grow-1">
                       <h5 className="card-title text-light mb-3">{item.title}</h5>
                       <p className="card-text text-light">{item.text}</p>
@@ -276,6 +367,7 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* Sección Buffet */}
         <section className="py-5 border-top border-secondary">
           <div className="container">
             <div className="row align-items-center">
@@ -287,30 +379,34 @@ useEffect(() => {
                 />
               </div>
               <div className="col-md-6 text-light">
-                <h3 className="mb-3" style={{ fontSize: "2rem" }}>Comida Buffet todos los días</h3>
+                <h3 className="mb-3" style={{ fontSize: "2rem" }}>
+                  Comida Buffet todos los días
+                </h3>
                 <p className="mb-4" style={{ fontSize: "1.1rem" }}>
-                  Explorá nuestros platillos del día y disfrutá comida casera fresca, variada y deliciosa.
+                  Explorá nuestros platillos del día y disfrutá comida casera
+                  fresca, variada y deliciosa.
                 </p>
                 <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-lg"
-                    style={{
-                      backgroundColor: "#25D366",
-                      color: "black",
-                      borderRadius: "999px",
-                      fontWeight: 600,
-                      paddingInline: "2.5rem",
-                    }}
-                  >
-                    Ver nuestro menú diario
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-lg"
+                  style={{
+                    backgroundColor: "#25D366",
+                    color: "black",
+                    borderRadius: "999px",
+                    fontWeight: 600,
+                    paddingInline: "2.5rem",
+                  }}
+                >
+                  Ver nuestro menú diario
                 </a>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Reseñas */}
         <section className="py-5 border-top border-secondary">
           <div className="container">
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -324,12 +420,16 @@ useEffect(() => {
               <div className="text-md-end">
                 {reseñas.length === 0 ? (
                   <p className="text-light-emphasis mb-0">
-                    Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia! 
+                    {cargando
+                      ? "Cargando reseñas..."
+                      : "Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia!"}
                   </p>
                 ) : (
                   <div>
                     <div className="d-flex align-items-baseline justify-content-md-end gap-2">
-                      <span style={{ fontSize: "2.2rem", fontWeight: 700 }}>
+                      <span
+                        style={{ fontSize: "2.2rem", fontWeight: 700 }}
+                      >
                         {promedioRedondeado.toFixed(1)}
                       </span>
                       <div className="rating-stars">
@@ -346,8 +446,7 @@ useEffect(() => {
             </div>
 
             <div className="row g-4">
-
-              {/* Forms*/}
+              {/* Formulario */}
               <div className="col-md-5">
                 <div className="card-dark p-4 rounded-4">
                   <h5 className="mb-3">Deja tu reseña</h5>
@@ -404,12 +503,17 @@ useEffect(() => {
               <div className="col-md-7">
                 {reseñas.length === 0 ? (
                   <p className="text-light-emphasis">
-                    Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia! 
+                    {cargando
+                      ? "Cargando reseñas..."
+                      : "Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia!"}
                   </p>
                 ) : (
                   <div className="d-flex flex-column gap-3">
-                    {reseñas.map((r, i) => (
-                      <div key={i} className="card-dark p-3 rounded-4 reseña-card">
+                    {reseñas.map((r) => (
+                      <div
+                        key={r.id ?? r.fecha + r.nombre}
+                        className="card-dark p-3 rounded-4 reseña-card"
+                      >
                         <div className="d-flex justify-content-between align-items-center mb-2">
                           <strong>{r.nombre}</strong>
                           <span className="small text-muted">{r.fecha}</span>
@@ -427,15 +531,22 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* Footer */}
         <footer
           className="py-5 border-top border-secondary text-center text-md-start"
-          style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}
+          style={{
+            background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)",
+            color: "white",
+            fontSize: "1.1rem",
+          }}
         >
           <div className="container">
             <div className="row align-items-center">
               <div className="col-md-6 mb-4 mb-md-0">
                 <h5 className="fw-bold mb-2">La Oficina</h5>
-                <p className="mb-1">Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras</p>
+                <p className="mb-1">
+                  Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras
+                </p>
                 <p className="mb-1">+504 9500-1933</p>
               </div>
               <div className="col-md-6 d-flex flex-column align-items-center align-items-md-end gap-3">
@@ -444,7 +555,14 @@ useEffect(() => {
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="instaicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="instaicon.webp"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   @laoficina
                 </a>
 
@@ -453,22 +571,37 @@ useEffect(() => {
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="faceicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="faceicon.webp"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   La Oficina
                 </a>
 
-                 <a
+                <a
                   href="https://www.pedidosya.com.hn/restaurantes/tegucigalpa/la-oficina-bar-menu?origin=shop_list"
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="pedidosya.png"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="pedidosya.png"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   La Oficina
                 </a>
-
               </div>
             </div>
-            <div className="text-center mt-4 small">© 2025 La Oficina. Todos los derechos reservados.</div>
+            <div className="text-center mt-4 small">
+              © 2025 La Oficina. Todos los derechos reservados.
+            </div>
           </div>
         </footer>
       </main>

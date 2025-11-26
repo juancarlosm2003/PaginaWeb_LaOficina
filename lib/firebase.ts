@@ -1,4 +1,4 @@
-// firebaseConfig.js
+// lib/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
@@ -8,7 +8,7 @@ const firebaseConfig = {
   projectId: "laoficina-reviews",
   storageBucket: "laoficina-reviews.firebasestorage.app",
   messagingSenderId: "970262875938",
-  appId: "1:970262875938:web:53d25524f57cc6d2ed9f7b"
+  appId: "1:970262875938:web:53d25524f57cc6d2ed9f7b",
 };
 
 const app = initializeApp(firebaseConfig);
