@@ -2,44 +2,49 @@ import Navbar from "./components/navbar";
 import Image from "next/image";
 
 export default function Eventos() {
-  const eventos = [
+  const actividades = [
     {
-      titulo: "Karaoke",
-      descripcion: "Vení a cantar con nosotros todos los viernes en nuestras Karaoke Nights conbuena música y ambiente encendido.”",
+      titulo: "Karaoke Nights",
+      descripcion:
+        "Todos los viernes vivimos noches llenas de música, diversión y buena vibra. Vení a cantar tus canciones favoritas en un ambiente único.",
       imagen: "/evento1.jpg",
-      etiqueta: "After office",
+      etiqueta: "Ambiente Nocturno",
     },
     {
-      titulo: "Fútbol en Vivo",
-      descripcion: "Viví la emoción del deporte en pantalla gigante. Disfrutá con tus amigos los mejores partidos en un ambiente único.",
+      titulo: "Fútbol en Pantalla Gigante",
+      descripcion:
+        "Transmitimos los partidos más importantes para que los disfrutes con comida increíble, bebidas frías y amigos. ¡Viví la emoción como si estuvieras en el estadio!",
       imagen: "/partidoo.jpg",
-      etiqueta: "Transmisión en Vivo",
+      etiqueta: "Deporte",
     },
     {
-      titulo: "Promos de temporada",
-      descripcion: "Combos, bebidas y platillos especiales según la temporada o fechas especiales.",
+      titulo: "Promos y Temporadas",
+      descripcion:
+        "Durante el año ofrecemos promociones especiales, combos, bebidas destacadas y platillos temáticos según la temporada o eventos festivos.",
       imagen: "/evento3.jpg",
-      etiqueta: "Promociones",
+      etiqueta: "Especiales del Mes",
     },
   ];
-
-  const whatsappUrl =
-    "https://wa.me/50498990034?text=Hola,%20me%20gustaría%20cotizar%20un%20evento%20en%20La%20Oficina.";
 
   return (
     <>
       <Navbar />
 
       <main className="bg-black text-light min-vh-100">
+        {/* HERO */}
         <section className="container py-5">
           <div className="row g-4 align-items-center">
             <div className="col-lg-6">
-              <h1 className="section-title mb-3">Eventos en La Oficina</h1>
+              <h1 className="section-title mb-3">Actividades en La Oficina</h1>
               <p className="text-light-emphasis mb-3">
-                Convertí tus reuniones, cumpleaños y celebraciones especiales en una experiencia
-                diferente. Contamos con comida, bar, música y ambiente ideal para tu grupo.
+                En <strong>La Oficina</strong> siempre pasa algo. Desde noches de
+                música y diversión hasta promociones especiales, queremos que cada
+                visita sea una experiencia distinta y llena de energía.
               </p>
-              
+              <p className="text-light-emphasis">
+                Estas son algunas de las actividades que ofrecemos durante el año,
+                pensadas para que la pasés bien y disfrutés al máximo cada momento.
+              </p>
             </div>
 
             <div className="col-lg-6">
@@ -49,7 +54,7 @@ export default function Eventos() {
               >
                 <Image
                   src="/Imgprincipal.png"
-                  alt="Eventos en La Oficina"
+                  alt="Actividades en La Oficina"
                   fill
                   style={{ objectFit: "cover" }}
                 />
@@ -65,12 +70,11 @@ export default function Eventos() {
           </div>
         </section>
 
-        {/* TARJETAS DE EVENTOS */}
+        {/* TARJETAS */}
         <section className="pb-5">
           <div className="container">
-
             <div className="row g-4 mb-4">
-              {eventos.map((ev, index) => (
+              {actividades.map((ev, index) => (
                 <div className="col-md-4" key={index}>
                   <div className="card-dark rounded-4 overflow-hidden h-100 border border-secondary">
                     <div className="position-relative" style={{ height: 190 }}>
@@ -82,7 +86,10 @@ export default function Eventos() {
                       />
                       <span
                         className="position-absolute top-0 start-0 m-2 px-3 py-1 small rounded-pill"
-                        style={{ backgroundColor: "rgba(0,0,0,0.75)", border: "1px solid #ff4d4d" }}
+                        style={{
+                          backgroundColor: "rgba(0,0,0,0.75)",
+                          border: "1px solid #ff4d4d",
+                        }}
                       >
                         {ev.etiqueta}
                       </span>
@@ -95,22 +102,25 @@ export default function Eventos() {
                 </div>
               ))}
             </div>
-
           </div>
         </section>
 
-        
-      </main>
-
-             <footer
+        {/* FOOTER */}
+        <footer
           className="py-5 border-top border-secondary text-center text-md-start"
-          style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}
+          style={{
+            background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)",
+            color: "white",
+            fontSize: "1.1rem",
+          }}
         >
           <div className="container">
             <div className="row align-items-center">
               <div className="col-md-6 mb-4 mb-md-0">
                 <h5 className="fw-bold mb-2">La Oficina</h5>
-                <p className="mb-1">Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras</p>
+                <p className="mb-1">
+                  Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras
+                </p>
                 <p className="mb-1">+504 9500-1933</p>
               </div>
               <div className="col-md-6 d-flex flex-column align-items-center align-items-md-end gap-3">
@@ -119,7 +129,14 @@ export default function Eventos() {
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="instaicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="instaicon.webp"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   @laoficina
                 </a>
 
@@ -128,24 +145,41 @@ export default function Eventos() {
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="faceicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="faceicon.webp"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   La Oficina
                 </a>
 
-                 <a
+                <a
                   href="https://www.pedidosya.com.hn/restaurantes/tegucigalpa/la-oficina-bar-menu?origin=shop_list"
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="pedidosya.png"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img
+                    src="pedidosya.png"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      filter: "invert(1)",
+                    }}
+                  />
                   La Oficina
                 </a>
-
               </div>
             </div>
-            <div className="text-center mt-4 small">© 2025 La Oficina. Todos los derechos reservados.</div>
+
+            <div className="text-center mt-4 small">
+              © 2025 La Oficina. Todos los derechos reservados.
+            </div>
           </div>
         </footer>
+      </main>
     </>
   );
 }
