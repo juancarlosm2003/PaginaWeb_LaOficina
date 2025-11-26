@@ -149,6 +149,50 @@ export default function QuienesSomos() {
           </div>
         </div>
       </main>
+      <footer
+          className="py-5 border-top border-secondary text-center text-md-start"
+          style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}
+        >
+          <div className="container">
+            <div className="row align-items-center">
+              <div className="col-md-6 mb-4 mb-md-0">
+                <h5 className="fw-bold mb-2">La Oficina</h5>
+                <p className="mb-1">Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras</p>
+                <p className="mb-1">+504 9500-1933</p>
+              </div>
+              <div className="col-md-6 d-flex flex-column align-items-center align-items-md-end gap-3">
+                <a
+                  href="https://www.instagram.com/laoficina.hn"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
+                  <img src="instaicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  @laoficina
+                </a>
+
+                <a
+                  href="https://www.facebook.com/laoficinahn"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
+                  <img src="faceicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  La Oficina
+                </a>
+
+                 <a
+                  href="https://www.pedidosya.com.hn/restaurantes/tegucigalpa/la-oficina-bar-menu?origin=shop_list"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
+                  <img src="pedidosya.png"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  La Oficina
+                </a>
+
+              </div>
+            </div>
+            <div className="text-center mt-4 small">© 2025 La Oficina. Todos los derechos reservados.</div>
+          </div>
+        </footer>
     </>
   );
 }

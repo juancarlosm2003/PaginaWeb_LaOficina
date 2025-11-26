@@ -7,8 +7,9 @@ import { Cedarville_Cursive, Libre_Caslon_Text } from "next/font/google";
 
 const cedarville = Cedarville_Cursive({ weight: "400" });
 const libreCaslon = Libre_Caslon_Text({ weight: ["400", "700"] });
+const whatsappUrl =
+    "https://wa.me/50498990034?text=Hola,%20me%20gustaría%20cotizar%20un%20evento%20en%20La%20Oficina.";
 
-// Tipo para una reseña
 type Reseña = {
   nombre: string;
   comentario: string;
@@ -22,28 +23,26 @@ export default function Home() {
   const [comentario, setComentario] = useState("");
   const [rating, setRating] = useState(5);
 
-  // Cargar reseñas guardadas en localStorage al inicio
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const guardadas = localStorage.getItem("reseñas-la-oficina");
-      if (guardadas) {
-        try {
-          setReseñas(JSON.parse(guardadas));
-        } catch (e) {
-          console.error("Error al leer reseñas guardadas", e);
-        }
-      }
+  // Cargar reseñas
+useEffect(() => {
+  const guardadas = localStorage.getItem("reseñas-la-oficina");
+  if (guardadas) {
+    try {
+      setReseñas(JSON.parse(guardadas));
+    } catch (e) {
+      console.error("Error al leer reseñas guardadas", e);
     }
-  }, []);
+  }
+}, []);
 
-  // Guardar reseñas cada vez que cambien
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("reseñas-la-oficina", JSON.stringify(reseñas));
-    }
-  }, [reseñas]);
 
-  // Inicializar Bootstrap JS
+// Guardar reseñas 
+useEffect(() => {
+  if (reseñas.length > 0) {
+    localStorage.setItem("reseñas-la-oficina", JSON.stringify(reseñas));
+  }
+}, [reseñas]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // @ts-ignore
@@ -67,7 +66,7 @@ export default function Home() {
     return stars;
   };
 
-  // Promedio de calificaciones
+  // Promedio
   const promedio =
     reseñas.length > 0
       ? reseñas.reduce((acc, r) => acc + r.rating, 0) / reseñas.length
@@ -79,7 +78,7 @@ export default function Home() {
     e.preventDefault();
 
     if (!nombre.trim() || !comentario.trim()) {
-      alert("Por favor llena tu nombre y tu reseña 😊");
+      alert("Por favor llena tu nombre y tu reseña");
       return;
     }
 
@@ -104,7 +103,6 @@ export default function Home() {
       <Navbar />
 
       <main className="bg-black text-light min-vh-100">
-        {/* Carousel */}
         <section className="container-fluid p-0">
           <div id="heroCarousel" className="carousel slide" data-bs-ride="carousel">
             <div className="carousel-inner">
@@ -164,7 +162,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Sección principal */}
         <section
           className="py-5 d-flex justify-content-center text-center"
           style={{
@@ -184,7 +181,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Mapa y info */}
+        {/*mapa*/}
         <section
           className="border-secondary mt-5 mb-5"
           style={{ paddingTop: "120px", paddingBottom: "120px" }}
@@ -208,8 +205,8 @@ export default function Home() {
                   {[
                     { title: "Horarios", text: "Lunes a domingo \n12:00 pm – 11:00 pm" },
                     { title: "Ubicación", text: "Metropolis Torre 2, Boulevard Suyapa, Tegucigalpa, Honduras" },
-                    { title: "Reservaciones", text: "Escríbenos para reservar tu mesa o evento privado." },
-                    { title: "Calificación", text: "★★★★★\nClientes satisfechos" },
+                    { title: "Servicio Buffet", text: "Escríbenos para saber más de nuestro buffet diario." },
+                    { title: "Karaoke Experience", text: "Disfruta de nuestras noches de karaoke con un ambiente divertido y relajado." },
                   ].map((item, i) => (
                     <div className="col-sm-6" key={i}>
                       <div
@@ -240,7 +237,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Tarjetas de comida */}
         <section className="py-5 mt-2 border-top border-secondary">
           <div className="container-fluid px-5">
             <div className="row g-5 justify-content-center">
@@ -280,7 +276,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Sección Buffet */}
         <section className="py-5 border-top border-secondary">
           <div className="container">
             <div className="row align-items-center">
@@ -297,21 +292,27 @@ export default function Home() {
                   Explorá nuestros platillos del día y disfrutá comida casera fresca, variada y deliciosa.
                 </p>
                 <a
-                  href="/menu"
-                  className="px-4 py-2"
-                  style={{ backgroundColor: "#5b0000", color: "white", borderRadius: "6px", textDecoration: "none", display: "inline-block" }}
-                >
-                  Ver menú
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-lg"
+                    style={{
+                      backgroundColor: "#25D366",
+                      color: "black",
+                      borderRadius: "999px",
+                      fontWeight: 600,
+                      paddingInline: "2.5rem",
+                    }}
+                  >
+                    Ver nuestro menú diario
                 </a>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Reseñas (dinámicas) */}
         <section className="py-5 border-top border-secondary">
           <div className="container">
-            {/* Título + promedio */}
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
               <div>
                 <h2 className="h3 mb-1">Reseñas de nuestros clientes</h2>
@@ -323,7 +324,7 @@ export default function Home() {
               <div className="text-md-end">
                 {reseñas.length === 0 ? (
                   <p className="text-light-emphasis mb-0">
-                    Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia! 😄
+                    Aún no hay reseñas. ¡Sé el primero en compartir tu experiencia! 
                   </p>
                 ) : (
                   <div>
@@ -345,7 +346,8 @@ export default function Home() {
             </div>
 
             <div className="row g-4">
-              {/* Formulario */}
+
+              {/* Forms*/}
               <div className="col-md-5">
                 <div className="card-dark p-4 rounded-4">
                   <h5 className="mb-3">Deja tu reseña</h5>
@@ -402,7 +404,7 @@ export default function Home() {
               <div className="col-md-7">
                 {reseñas.length === 0 ? (
                   <p className="text-light-emphasis">
-                    Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia! 😄
+                    Aún no hay reseñas. ¡Sé el primero en contarnos tu experiencia! 
                   </p>
                 ) : (
                   <div className="d-flex flex-column gap-3">
@@ -425,7 +427,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer */}
         <footer
           className="py-5 border-top border-secondary text-center text-md-start"
           style={{ background: "linear-gradient(135deg, #4d0a0a, #700e0e, #8a1515)", color: "white", fontSize: "1.1rem" }}
@@ -443,17 +444,28 @@ export default function Home() {
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="instaicon.webp" alt="Instagram" style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img src="instaicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
                   @laoficina
                 </a>
+
                 <a
                   href="https://www.facebook.com/laoficinahn"
                   target="_blank"
                   className="d-flex align-items-center gap-2 text-white text-decoration-none"
                 >
-                  <img src="faceicon.webp" alt="Facebook" style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  <img src="faceicon.webp"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
                   La Oficina
                 </a>
+
+                 <a
+                  href="https://www.pedidosya.com.hn/restaurantes/tegucigalpa/la-oficina-bar-menu?origin=shop_list"
+                  target="_blank"
+                  className="d-flex align-items-center gap-2 text-white text-decoration-none"
+                >
+                  <img src="pedidosya.png"  style={{ width: "28px", height: "28px", filter: "invert(1)" }} />
+                  La Oficina
+                </a>
+
               </div>
             </div>
             <div className="text-center mt-4 small">© 2025 La Oficina. Todos los derechos reservados.</div>
